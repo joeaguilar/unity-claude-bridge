@@ -431,13 +431,10 @@ namespace Blue.ClaudeBridge
                 if (cam == null) throw new Exception("no camera found in the open scene(s)");
             }
 
-            if (string.IsNullOrEmpty(path))
-                path = Path.Combine(ClaudeBridge.RootDir, "shots", "shot.png");
-
-            if (!Path.IsPathRooted(path))
-                path = Path.Combine(Directory.GetParent(Application.dataPath).FullName, path);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            // Never write where the caller asks without checking: an unguarded
+            // rooted path here is an arbitrary file write anywhere the editor user
+            // can reach. See PathGuard.
+            path = PathGuard.ResolveForWrite(path, Path.Combine(".claude-bridge", "shots", "shot.png"));
 
             // Render the camera into an offscreen target and read it back synchronously.
             // ScreenCapture.CaptureScreenshot is asynchronous and only meaningful in play
