@@ -39,6 +39,7 @@ namespace Blue.ClaudeBridge
                 case "stop":       return SetPlaying(false);
                 case "menu":       return Menu(Req(a, "item"));
                 case "assets":     return Assets(Arg(a, "filter", ""), Arg(a, "limit", 100));
+                case "packages":   return Packages(Arg(a, "filter", (string)null));
                 case "playmode":   return PlayModeOptions(a);
                 case "tests":      return TestRunner.Start(
                                        Arg(a, "mode", "edit"),
@@ -173,6 +174,49 @@ namespace Blue.ClaudeBridge
                 // material is embedded inside. mainAssetType describes the file, not
                 // the thing that matched the filter.
                 { "note", "mainAssetType is the file's main asset; filters can match embedded sub-assets" },
+            };
+        }
+
+        /// <summary>
+        /// Registered packages with their source, status and any UPM errors.
+        ///
+        /// Package Manager reports a package as "invalid" without saying why in the
+        /// editor log; the reason lives in PackageInfo.errors. This surfaces it.
+        /// </summary>
+        static object Packages(string filter)
+        {
+            var all = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+            var list = new List<object>();
+
+            foreach (var p in all)
+            {
+                if (!string.IsNullOrEmpty(filter) &&
+                    p.name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0) continue;
+
+                var errors = new List<object>();
+                if (p.errors != null)
+                    foreach (var e in p.errors)
+                        errors.Add(new Dictionary<string, object>
+                        {
+                            { "code", e.errorCode.ToString() },
+                            { "message", e.message },
+                        });
+
+                list.Add(new Dictionary<string, object>
+                {
+                    { "name", p.name },
+                    { "version", p.version },
+                    { "source", p.source.ToString() },
+                    { "resolvedPath", p.resolvedPath },
+                    { "isDirectDependency", p.isDirectDependency },
+                    { "errors", errors },
+                });
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "count", list.Count },
+                { "packages", list },
             };
         }
 

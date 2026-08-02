@@ -1,6 +1,6 @@
 {
   "name": "com.blue.claude-bridge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "Claude Bridge",
   "description": "Drive a running Unity Editor from outside it. An agent or script writes JSON command files into <project>/.claude-bridge/in and reads results from /out; the editor drains the queue on the main thread. Because the queue lives on disk rather than in a socket, it survives domain reloads.",
   "unity": "6000.0",

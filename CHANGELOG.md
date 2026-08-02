@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.0] - 2026-08-02
+
+### Added
+- `packages` — registered packages with version, source, resolved path and any
+  UPM errors. Package Manager reports a package as "invalid" without saying why
+  anywhere in the editor log; the reason lives in `PackageInfo.errors`, and this
+  surfaces it.
+- `dev/embed.ps1`, `dev/publish.ps1`, `dev/check-metas.ps1` — the development
+  loop. A git-installed package resolves into `Library/PackageCache`, which Unity
+  marks immutable, so edits there are discarded and no `.meta` files are
+  generated. Changing this package means embedding it in a host project and
+  copying back, and these automate that with a meta-completeness gate on publish.
+
+### Notes for anyone scripting Unity from PowerShell
+Three traps, all handled in `dev/`:
+- PowerShell 5.1 `-Encoding utf8` writes a **BOM**. Unity rejects a BOM in
+  `manifest.json` (`Non-whitespace before {[`, char 65279) and then resolves *no
+  packages at all*, which surfaces as packages showing "invalid" rather than as
+  an encoding error.
+- Removing a dependency from `manifest.json` is not enough: `packages-lock.json`
+  independently pins the resolved git package, so UPM keeps loading the cached
+  copy and an embedded folder of the same name becomes a duplicate.
+- Unity does not reliably re-resolve when `manifest.json` changes underneath a
+  running editor. Restart it.
+
 ## [0.2.0] - 2026-08-02
 
 ### Added

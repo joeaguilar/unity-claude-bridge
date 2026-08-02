@@ -79,6 +79,7 @@ main thread. Dispatch is skipped while `isCompiling` or `isUpdating`.
 | `playmode` | `domainReload? sceneReload?` | read/set Enter Play Mode Options |
 | `menu` | `item` | `EditorApplication.ExecuteMenuItem` |
 | `assets` | `filter? limit?` | `AssetDatabase.FindAssets` |
+| `packages` | `filter?` | registered packages, source, and UPM errors |
 | `tests` | `mode? filter? category?` | start a run; `mode`: `edit`\|`play` |
 | `testresults` | `runId?` | poll a run; defaults to the latest |
 | `commands` | | list the above |
@@ -159,9 +160,27 @@ up the serializer.
 **Commit the `.meta` file for every new source file.** Unity generates metas for
 embedded packages but never for immutable ones in `Library/PackageCache`, so a
 git-installed package missing them does not compile — every file is silently
-skipped with `has no meta file, but it's in an immutable folder`. Develop with
-the package embedded in a project so Unity generates them, then copy both the
-source and its meta here.
+skipped with `has no meta file, but it's in an immutable folder`.
+
+`dev/` automates the whole loop, including that gate:
+
+```powershell
+.\dev\embed.ps1   -Project C:\path\to\HostProject    # then RESTART the editor
+# edit Editor\*.cs, compile with the host project's .\tools\unity.ps1 sync
+.\dev\publish.ps1 -Project C:\path\to\HostProject -Version 0.4.0
+# review the diff, then commit, tag vX.Y.Z, and push before the host can resolve it
+```
+
+`embed.ps1` drops the dependency from `manifest.json` **and** `packages-lock.json`
+— the lock file pins the resolved git package independently, so removing only the
+manifest entry leaves UPM loading the cached copy while the embedded folder
+becomes a same-name duplicate that Package Manager reports as invalid.
+
+Restarting the editor after `embed.ps1` is not optional: Unity does not reliably
+re-resolve packages when `manifest.json` changes underneath a running editor.
+
+`publish.ps1` refuses to publish if any file is missing its `.meta`.
+`dev/check-metas.ps1` runs that check standalone.
 
 ## Agent skill
 
