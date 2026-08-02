@@ -1,0 +1,18 @@
+# This repo is a UPM package, not a Unity project. Nothing here should be
+# generated -- but guard against it being opened inside one by mistake.
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Ll]ogs/
+.claude-bridge/
+
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.user
+
+.DS_Store
+Thumbs.db
