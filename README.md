@@ -134,6 +134,13 @@ thread and must return only plain types — dictionaries, lists, strings, number
 bools. Returning a `UnityEngine.Object` recurses into engine internals and blows
 up the serializer.
 
+**Commit the `.meta` file for every new source file.** Unity generates metas for
+embedded packages but never for immutable ones in `Library/PackageCache`, so a
+git-installed package missing them does not compile — every file is silently
+skipped with `has no meta file, but it's in an immutable folder`. Develop with
+the package embedded in a project so Unity generates them, then copy both the
+source and its meta here.
+
 ## Agent skill
 
 `Skill~/unity-bridge/` holds a Claude Code skill covering the workflow and the

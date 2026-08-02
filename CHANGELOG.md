@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.1] - 2026-08-02
+
+### Fixed
+- Ship `.meta` files. Without them a git-installed package does not compile at
+  all: Unity generates metas for embedded packages but never for immutable ones
+  in `Library/PackageCache`, and logs `has no meta file, but it's in an immutable
+  folder. The asset will be ignored.` for every source file. **0.1.0 is broken —
+  use 0.1.1 or later.**
+
 ## [0.1.0] - 2026-08-02
 
 Initial release. Extracted from the ChoomDoom project, where it was verified
