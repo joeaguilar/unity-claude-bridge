@@ -40,6 +40,11 @@ namespace Blue.ClaudeBridge
                 case "menu":       return Menu(Req(a, "item"));
                 case "assets":     return Assets(Arg(a, "filter", ""), Arg(a, "limit", 100));
                 case "playmode":   return PlayModeOptions(a);
+                case "tests":      return TestRunner.Start(
+                                       Arg(a, "mode", "edit"),
+                                       Arg(a, "filter", (string)null),
+                                       Arg(a, "category", (string)null));
+                case "testresults":return TestRunner.Results(Arg(a, "runId", (string)null));
                 case "commands":   return ListCommands();
                 default:
                     throw new Exception("unknown cmd '" + cmd + "'. Try {\"cmd\":\"commands\"}.");
@@ -112,6 +117,8 @@ namespace Blue.ClaudeBridge
                 "menu      {item}                           - EditorApplication.ExecuteMenuItem",
                 "assets    {filter?,limit?}                 - AssetDatabase.FindAssets",
                 "playmode  {domainReload?,sceneReload?}     - read/set Enter Play Mode Options",
+                "tests     {mode?,filter?,category?}        - start a run; mode: edit|play",
+                "testresults {runId?}                       - poll a run; defaults to the latest",
                 "commands                                   - this list",
             };
         }

@@ -54,6 +54,10 @@ namespace Blue.ClaudeBridge
             ConsoleCapture.Install();
             EnsureWrapperInstalled();
 
+            // Re-registered on every domain load, so a PlayMode run that reloads the
+            // domain mid-flight keeps reporting into the same results file.
+            TestRunner.Install();
+
             EditorApplication.update -= Tick;
             EditorApplication.update += Tick;
 

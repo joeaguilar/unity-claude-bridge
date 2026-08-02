@@ -79,10 +79,32 @@ main thread. Dispatch is skipped while `isCompiling` or `isUpdating`.
 | `playmode` | `domainReload? sceneReload?` | read/set Enter Play Mode Options |
 | `menu` | `item` | `EditorApplication.ExecuteMenuItem` |
 | `assets` | `filter? limit?` | `AssetDatabase.FindAssets` |
+| `tests` | `mode? filter? category?` | start a run; `mode`: `edit`\|`play` |
+| `testresults` | `runId?` | poll a run; defaults to the latest |
 | `commands` | | list the above |
 
-`sync` is a wrapper-side macro, not a bridge command: refresh, wait out the
-compile, print any errors. It is the main loop when editing scripts externally.
+Two wrapper-side macros are not bridge commands:
+
+- **`sync`** — refresh, wait out the compile, print any errors. The main loop when
+  editing scripts externally.
+- **`test`** — start a run, poll to completion, print failures and a summary.
+
+```powershell
+.\tools\unity.ps1 test
+.\tools\unity.ps1 test -CmdArgs @{ mode = 'play' }
+.\tools\unity.ps1 test -CmdArgs @{ category = 'Combat' }
+.\tools\unity.ps1 test -CmdArgs @{ filter = 'MyNamespace.MyTests.OneTest' }
+```
+
+### How tests report
+
+`tests` returns a `runId` immediately and results stream to
+`.claude-bridge/tests/<runId>.json` until `finished` is true. They are not
+returned from the starting command, for two reasons: `TestRunnerApi` is
+asynchronous, so blocking the pump would deadlock the loop that delivers the
+result; and a PlayMode run reloads the domain mid-flight, wiping static state.
+The run id lives in `SessionState` and callbacks re-register on each domain load,
+so a run survives the reload.
 
 ## Known limits
 
@@ -149,6 +171,5 @@ in any project.
 
 ## Not yet implemented
 
-- `tests` — run EditMode/PlayMode tests in the live editor via `TestRunnerApi`
 - `scene` — open/save/new
 - Reading Console entries that predate the current domain

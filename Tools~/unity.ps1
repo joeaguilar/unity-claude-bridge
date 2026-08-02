@@ -121,5 +121,46 @@ if ($Command -eq 'sync') {
     return
 }
 
+# 'test' is a convenience macro: start a run, poll until it finishes, summarize.
+# EditMode runs finish in seconds; PlayMode runs reload the domain part way
+# through, which is why results are polled from a file rather than awaited.
+if ($Command -eq 'test') {
+    $start = Invoke-Bridge -Cmd 'tests' -Arguments $CmdArgs -Timeout $TimeoutSec
+    Write-Host "Running $($start.mode) tests (run $($start.runId))..."
+
+    $deadline = (Get-Date).AddSeconds(600)
+    $run = $null
+    while ((Get-Date) -lt $deadline) {
+        Start-Sleep -Milliseconds 700
+        try {
+            $run = Invoke-Bridge -Cmd 'testresults' -Arguments @{ runId = $start.runId } -Timeout $TimeoutSec
+        } catch {
+            # A PlayMode run reloads the domain; the bridge is briefly unavailable.
+            continue
+        }
+        if ($run.finished) { break }
+    }
+
+    if ($null -eq $run -or -not $run.finished) {
+        throw "Test run $($start.runId) did not finish in time. Results file: $($start.resultsFile)"
+    }
+
+    $failed = @($run.tests | Where-Object { $_.status -eq 'Failed' })
+
+    Write-Host ''
+    foreach ($t in $failed) {
+        Write-Host "FAILED  $($t.name)" -ForegroundColor Red
+        if ($t.message) { Write-Host "        $($t.message)" -ForegroundColor Red }
+    }
+
+    $summary = "$($run.passed) passed, $($run.failed) failed, $($run.skipped) skipped in $($run.durationSec)s"
+    if ($run.failed -gt 0) {
+        Write-Host $summary -ForegroundColor Red
+    } else {
+        Write-Host $summary -ForegroundColor Green
+    }
+    return
+}
+
 $result = Invoke-Bridge -Cmd $Command -Arguments $CmdArgs -Timeout $TimeoutSec
 $result | ConvertTo-Json -Depth 12

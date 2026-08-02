@@ -1,6 +1,6 @@
 {
   "name": "com.blue.claude-bridge",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "displayName": "Claude Bridge",
   "description": "Drive a running Unity Editor from outside it. An agent or script writes JSON command files into <project>/.claude-bridge/in and reads results from /out; the editor drains the queue on the main thread. Because the queue lives on disk rather than in a socket, it survives domain reloads.",
   "unity": "6000.0",
@@ -10,7 +10,9 @@
     "url": "https://github.com/joeaguilar/unity-claude-bridge.git"
   },
   "keywords": [ "editor", "tooling", "automation", "agent", "claude" ],
+  "license": "MIT",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.test-framework": "1.4.5"
   }
 }

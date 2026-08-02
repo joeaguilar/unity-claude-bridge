@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] - 2026-08-02
+
+### Added
+- `tests` / `testresults` — run EditMode or PlayMode tests in the live editor via
+  `TestRunnerApi`, filtered by test name or category. Results stream to
+  `.claude-bridge/tests/<runId>.json`. The wrapper gains a `test` macro that
+  starts a run, polls to completion, and prints failures with their messages.
+- MIT `LICENSE`.
+
+### Notes
+- Results go to disk rather than being returned from the starting command for two
+  reasons: `TestRunnerApi` is asynchronous, so blocking the pump would deadlock
+  the very loop that delivers the result; and a PlayMode run reloads the domain
+  mid-flight, which wipes static state. The run id lives in `SessionState` and
+  callbacks re-register on every domain load.
+- `TestRunnerApi` is a `ScriptableObject` and its callback registry survives
+  domain reloads, so re-registering each load stacks a duplicate subscription and
+  every test reports twice. Callbacks are now dropped in
+  `AssemblyReloadEvents.beforeAssemblyReload`, and `TestFinished` dedupes by test
+  full name as a backstop.
+- Run totals come from `RunFinished`'s authoritative counts, not from the
+  incremental tally, which a mid-run domain reload can desynchronize.
+- Adds a `com.unity.test-framework` dependency.
+
 ## [0.1.1] - 2026-08-02
 
 ### Fixed

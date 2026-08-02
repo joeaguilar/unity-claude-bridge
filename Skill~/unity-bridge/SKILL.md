@@ -1,6 +1,6 @@
 ---
 name: unity-bridge
-description: Drive a running Unity Editor from outside it via the Claude Bridge file queue - recompile and read compile errors, dump the scene graph, inspect GameObjects, screenshot the game or scene view, toggle play mode, run menu items. Trigger whenever working in a Unity project that has com.blue.claude-bridge installed and the task touches the live editor - after editing any .cs file, or on asks like "did that compile", "what's in the scene", "show me what it looks like", "run it", "check the console", "why is this pink". Do NOT trigger for Unity projects without the bridge package installed, or for headless -batchmode builds and CI, which do not need it.
+description: Drive a running Unity Editor from outside it via the Claude Bridge file queue - recompile and read compile errors, run EditMode/PlayMode tests, dump the scene graph, inspect GameObjects, screenshot the game or scene view, toggle play mode, run menu items. Trigger whenever working in a Unity project that has com.blue.claude-bridge installed and the task touches the live editor - after editing any .cs file, or on asks like "did that compile", "run the tests", "what's in the scene", "show me what it looks like", "run it", "check the console", "why is this pink". Do NOT trigger for Unity projects without the bridge package installed, or for headless -batchmode builds and CI, which do not need it.
 ---
 
 # Unity Bridge
@@ -33,6 +33,26 @@ until `sync` comes back clean.
 
 Unity does not auto-import while unfocused, so editing a file on disk does
 nothing until `sync` (or `refresh`) forces it.
+
+## Running tests
+
+```powershell
+.\tools\unity.ps1 test                                   # EditMode
+.\tools\unity.ps1 test -CmdArgs @{ mode='play' }         # PlayMode
+.\tools\unity.ps1 test -CmdArgs @{ category='Combat' }
+.\tools\unity.ps1 test -CmdArgs @{ filter='Ns.MyTests.OneTest' }
+```
+
+`test` starts a run, polls to completion, and prints failures with messages plus
+a pass/fail/skip summary. Use it to verify behaviour changes — `sync` only proves
+the code compiles, not that it works.
+
+Under the hood `tests` returns a `runId` and results stream to
+`.claude-bridge/tests/<runId>.json` until `finished` is true; `testresults` polls
+it. Prefer the `test` macro unless you need the raw data.
+
+PlayMode runs enter play mode, so the **editor window focus requirement below
+applies to them too**.
 
 ## Commands
 
